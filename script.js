@@ -30,14 +30,7 @@ function initializeDots() {
             directionX: Math.random() < 0.5 ? -1 : 1,
             directionY: Math.random() < 0.5 ? -1 : 1
         }
-        // let x = Math.random() * WWIDTH;
-        // let y = Math.random() * WHEIGHT;
-        // let speed = Math.random() * MAXSPEED + 0.1;
-        // let directionX = Math.random() < 0.5 ? -1 : 1;
-        // let directionY = Math.random() < 0.5 ? -1 : 1;
-    
         Dots.push(Dot);
-
     }
 }
 
@@ -48,7 +41,10 @@ function setDirection(directionX, directionY, dot) {
 }
 
 function renderDots() {
-    Dots.forEach((dot,i) => {
+    Dots.forEach((dot, i) => {
+        for (let j = 0; j < i; j++) {
+            checkCollision(dot, Dots[j])
+        }
         moveDot(dot, i)
         ctx.beginPath();
         ctx.arc(dot.x, dot.y, DOTRADIUS, 0, Math.PI * 2, true);
@@ -57,22 +53,22 @@ function renderDots() {
     });
 }
 
-function renderEdges(){
+function renderEdges() {
     ctx.shadowColor = 'rgba(0,0,0,0)'
-    for( let i = 0; i < Dots.length; i++){
+    for (let i = 0; i < Dots.length; i++) {
         //looping through dots and draw an edge to each other dot in the array
         let currentDot = Dots[i];
-        Dots.forEach( ( nextDot, j) =>   {
+        Dots.forEach((nextDot, j) => {
             // if nextDot === currentDot return, because we do not want to draw a recursive edge
-            if(i === j){
+            if (i === j) {
                 return
             }
             let alpha = -0.00062 * Math.pow((getDistance(currentDot, nextDot)), 2) + 100;
             // console.log("Distance:" , getDistance(currentDot, nextDot))
             // console.log("Alpha:", alpha / 100)
-            if( alpha > 0){
+            if (alpha > 0) {
                 ctx.globalAlpha = alpha / 100;
-            }else{
+            } else {
                 ctx.globalAlpha = 0;
             }
 
@@ -81,10 +77,10 @@ function renderEdges(){
             ctx.moveTo(currentDot.x, currentDot.y);
             ctx.lineTo(nextDot.x, nextDot.y);
             ctx.stroke();
-           
-            
+
+
         })
-       
+
     }
     ctx.globalAlpha = 1;
     ctx.shadowColor = "white";
@@ -98,38 +94,45 @@ function render() {
     renderEdges();
 }
 
-function checkCollision(origin, target){
+function checkCollision(origin, target) {
     //check collision of origin with target
     let distance = getDistance(origin, target);
     // console.log("Distance Dot0 to Dot 1:" , distance)
-    if( distance <= (2 * DOTRADIUS) + 1 ){
-        console.log("collision detected")
+    if (distance <= (2 * DOTRADIUS) + 1) {
+        let originX = origin.directionX;
+        let originY = origin.directionY;        
         let targetX = target.directionX;
         let targetY = target.directionY;
-        setDirection(origin.directionX, origin.directionY, target );
+    // TODO better collision behavior
+        console.log("collision detected")
         setDirection(targetX, targetY, origin);
-        origin.x += origin.directionX * origin.speed;
-        origin.y += origin.directionY * origin.speed;
-        target.x += target.directionX * target.speed;
-        target.y += target.directionY * target.speed;
+        setDirection(originX, originY, target);
+      
+
+
+
+
+
+
+        // origin.x += origin.directionX * origin.speed;
+        // origin.y += origin.directionY * origin.speed;
+        // target.x += target.directionX * target.speed;
+        // target.y += target.directionY * target.speed;
+
+
     }
 }
 
-function getDistance(origin, target){
- let distance =  Math.sqrt(Math.pow((target.x - origin.x), 2) + Math.pow((target.y - origin.y), 2))
-//  ctx.beginPath();
-//  ctx.arc(origin.x, origin.y, distance, 0, Math.PI * 2, true)
-//  ctx.stroke();
- return distance
+function getDistance(origin, target) {
+    let distance = Math.sqrt(Math.pow((target.x - origin.x), 2) + Math.pow((target.y - origin.y), 2))
+    //  ctx.beginPath();
+    //  ctx.arc(origin.x, origin.y, distance, 0, Math.PI * 2, true)
+    //  ctx.stroke();
+    return distance
 }
 
 function moveDot(dot, i) {
-    Dots.forEach( (other, j) =>{
-        if(i==j){
-            return;
-        }
-        checkCollision(dot, other)
-    } )
+
     if (dot.x + 5 >= canvas.width) {
         setDirection(-1, dot.directionY, dot);
     } else if (dot.x - 5 <= 0) {
